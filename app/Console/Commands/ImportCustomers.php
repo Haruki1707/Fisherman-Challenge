@@ -7,11 +7,13 @@ use App\Models\City;
 use App\Models\Customer;
 use App\Models\Street;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ImportCustomers extends Command
 {
+    protected float $executionStartTime;
+
     /**
      * The name and signature of the console command.
      *
@@ -31,30 +33,40 @@ class ImportCustomers extends Command
      */
     public function handle()
     {
+        // Checks if the file exists on the local storage drive
         $file = $this->argument('excelFileName') . '.xlsx';
         if (!\Storage::disk('local')->exists($file)) {
-            echo "$file Excel file not found on local storage drive";
+            $this->error(" $file Excel file not found on local storage drive ");
             return;
         }
 
-        // Gets current time before execution
-        $start = microtime(true);
+        // Starts counter
+        $this->startExecutionCounter();
 
         // Gets the data in a collection from the file using CustomersImport
         $data = Excel::toCollection(new CustomersImport, $file, 'local')[0];
 
-        // Subtracts current time with start execution time to see how much time it took
-        $this->comment('Data retrieved in ' . (microtime(true) - $start) * 1000 . 'ms');
+        // Stops counter
+        $this->stopExecutionCounter('Data retrieved from Excel');
 
+        // Checks if the Excel file contains any row aside from the header
         if (count($data) < 1) {
             echo "No data to insert";
             return;
         }
 
-        //TODO: Check if the table headers are the same as the table columns
+        // Checks if the customers table on the DB contains the same columns of the Excel
+        // This helps to prevent if the table has no column headers or if the Excel file
+        // Does not have the same data structure as the table
+        $schemaColumns = collect(Schema::getColumnListing('customers'));
+        foreach ($data[0]->keys() as $column) {
+            if (!$schemaColumns->contains($column)) {
+                $this->error(" '$column' not found on the customers DB table ");
+                return;
+            }
+        }
 
-        // Same as before for execution time
-        $start = microtime(true);
+        $this->startExecutionCounter();
 
         // Inserts each city found on the data into the DB, if repeated it doesn't insert it and retrieve it
         // Then after getting the city model we insert the street, and we repeat the same process as the city
@@ -68,7 +80,7 @@ class ImportCustomers extends Command
                 return null;
             }
 
-            $address[0] = trim(preg_replace('/^ |[0-9]/', '', $address[0]));
+            $address[0] = trim(preg_replace('/[0-9]/', '', $address[0]));
             $address[1] = trim($address[1]);
 
             // We remove the separated street and city from the address
@@ -95,7 +107,18 @@ class ImportCustomers extends Command
             );
         });
 
-        // Same as before for execution time
-        $this->comment('Data inserted in ' . (microtime(true) - $start) * 1000 . 'ms');
+        $this->stopExecutionCounter('Data inserted to DB');
+    }
+
+    protected function startExecutionCounter(): void
+    {
+        // Gets current time before execution
+        $this->executionStartTime = microtime(true);
+    }
+
+    protected function stopExecutionCounter($message): void
+    {
+        // Subtracts current time with start execution time to see how much time it took
+        $this->comment("$message in " . (microtime(true) - $this->executionStartTime) * 1000 . 'ms');
     }
 }
