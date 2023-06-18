@@ -14,7 +14,7 @@ class ImportTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_excel_file_can_be_uploaded(): void
+    public function test_excel_file_can_be_uploaded_and_customers_are_imported(): void
     {
         $response = $this->post('/', [
             'excel_file' => new UploadedFile(storage_path('Fisherman Challenge.xlsx'), 'Data.xlsx',

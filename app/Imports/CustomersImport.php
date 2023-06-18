@@ -39,7 +39,7 @@ class CustomersImport implements ToModel, WithHeadingRow, WithValidation, WithUp
 
     // This inserts and retrieves each city and street from the data into the database.
     // If a city is already present is just retrieved instead.
-    // The street is follows a similar process as with the city.
+    // The street follows a similar process as with the city.
     // The key difference is that the city ID is associated with the street.
     // Finally, the city and street IDs are linked to the customer and inserted into the database.
     public function model(array $row): ?Customer
