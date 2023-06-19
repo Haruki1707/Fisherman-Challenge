@@ -14,7 +14,7 @@
 * Then we just run the next command to make it generate a key
 ``php artisan key:generate``
 * After that we set on '.env' the settings we want, usually we just need to set the type of database we want to use and the credentials. Is recommended to just use 'sqlite' as is easier
-![img_1.png](img_1.png)
+![img_1.png](img.png)
 * Finally, we just need to run the migrations with the following command
 ``php artisan migrate``
 * If it is the second time running the migrations is recommended to run the following command instead
@@ -25,3 +25,8 @@
 * Now is time to serve the project, we need to run the following commands at the same time
 ``php artisan serve`` & ``npm run dev``
 * We follow the link given by the 'artisan serve' command. If we instead follow the one by NPM it will tell us that is just for serving the frontend and is not the link you want to open
+
+## Running the tests
+
+* For running the tests we just need to run the following command, but we need to make sure ``npm run dev`` command is actually running for the tests to work, this is a limitation from the Inertia package
+``php artisan test``
