@@ -14,7 +14,7 @@
 * Then we just run the next command to make it generate a key
 ``php artisan key:generate``
 * After that we set on '.env' the settings we want, usually we just need to set the type of database we want to use and the credentials. Is recommended to just use 'sqlite' as is easier
-![img_1.png](img.png)
+![img_1.png](img_1.png)
 * Finally, we just need to run the migrations with the following command
 ``php artisan migrate``
 * If it is the second time running the migrations is recommended to run the following command instead
